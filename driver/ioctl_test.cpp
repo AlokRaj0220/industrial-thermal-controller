@@ -28,6 +28,15 @@ int main() {
     cout << "Target Temp: " << state.target_temp << "\n";
     cout << "Alarm: " << state.alarm_active << "\n";
 
+    thermal_channel_data data{};
+    data.channel = 0;
+    if (ioctl(fd, THERMAL_GET_ADC_MV, &data) < 0) {
+        perror("THERMAL_GET_ADC_MV");
+        close(fd);
+        return 1;
+    }
+    cout << "ADC Channel 0: " << data.value << " mV\n";
+
     __s32 new_target = 35000;
 
     if (ioctl(fd, THERMAL_SET_TARGET_TEMP, &new_target) < 0) {
