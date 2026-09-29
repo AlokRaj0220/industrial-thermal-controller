@@ -170,16 +170,18 @@ static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
     __s32 temp_val;
     struct thermal_channel_data ch_data;
     unsigned long flags;
+    struct thermal_state local_state;
 
     switch (cmd) {
     // --- Legacy IOCTLs ---
     case THERMAL_GET_STATE:
         spin_lock_irqsave(&sim_lock, flags);
-        if (copy_to_user((struct thermal_state __user *)arg, &sim_state, sizeof(struct thermal_state))) {
-            spin_unlock_irqrestore(&sim_lock, flags);
+        local_state = sim_state;
+        spin_unlock_irqrestore(&sim_lock, flags);
+        
+        if (copy_to_user((struct thermal_state __user *)arg, &local_state, sizeof(struct thermal_state))) {
             return -EFAULT;
         }
-        spin_unlock_irqrestore(&sim_lock, flags);
         break;
 
     case THERMAL_SET_TARGET_TEMP:
