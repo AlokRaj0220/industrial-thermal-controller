@@ -13,5 +13,3 @@ driver/modules.order
 # Compiled test executable
 driver/ioctl_test
 
-# Reference repository (temporary reference only)
-ungula-thermal-reference/
