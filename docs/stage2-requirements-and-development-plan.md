@@ -1,4 +1,4 @@
-# Stage 2: Requirements and Development Plan
+# Stage 2 — Requirements and Development Plan
 
 ## Industrial Thermal Management & Dynamic Fan Controller
 

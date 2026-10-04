@@ -1,4 +1,4 @@
-# Stage 4: Implementation and Integration
+# Stage 4 — Implementation and Integration
 
 ## Industrial Thermal Management & Dynamic Fan Controller
 

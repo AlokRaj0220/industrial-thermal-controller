@@ -1,4 +1,4 @@
-# Stage 5: Testing, Verification and Results
+# Stage 5 — Testing, Verification and Results
 
 ## Industrial Thermal Management & Dynamic Fan Controller
 

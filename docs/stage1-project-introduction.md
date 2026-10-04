@@ -1,4 +1,4 @@
-# Stage 1: Project Introduction
+# Stage 1 — Project Introduction
 
 ## Industrial Thermal Management & Dynamic Fan Controller
 

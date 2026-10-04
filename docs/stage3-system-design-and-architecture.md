@@ -1,4 +1,4 @@
-# Stage 3: System Design and Architecture
+# Stage 3 — System Design and Architecture
 
 ## Industrial Thermal Management & Dynamic Fan Controller
 
