@@ -10,18 +10,18 @@ The overall system architecture of the Industrial Thermal Management & Dynamic F
 
 ```mermaid
 flowchart TD
-    App[C++17 Userspace Application] --> HAL[C++ Driver HAL / IDriver]
+    App["C++17 Userspace Application"] --> HAL["C++ Driver HAL / IDriver"]
     
-    subgraph Linux LKM Integration Mode
-        HAL -->|Implementation| LKD[LinuxThermalDriver]
-        LKD -->|IOCTLs| VFS[/dev/thermal_controller]
-        VFS --> LKM[Linux Character Device / LKM]
-        LKM --> VirtualState[Virtual Hardware / Simulated Thermal State]
+    subgraph LINUX["Linux LKM Integration Mode"]
+        HAL -->|Implementation| LKD["LinuxThermalDriver"]
+        LKD -->|IOCTLs| VFS["/dev/thermal_controller"]
+        VFS --> LKM["Linux Character Device / LKM"]
+        LKM --> VirtualState["Virtual Hardware / Simulated Thermal State"]
     end
 
-    subgraph Local Emulator Mode
-        HAL -.->|Implementation| VHB[VirtualHardwareBus]
-        VHB -.-> LocalVirtual[Local Virtual Hardware]
+    subgraph LOCAL["Local Emulator Mode"]
+        HAL -.->|Implementation| VHB["VirtualHardwareBus"]
+        VHB -.-> LocalVirtual["Local Virtual Hardware"]
     end
 ```
 
@@ -57,16 +57,16 @@ The system relies on cleanly abstracted interfaces to separate high-level therma
 
 ```mermaid
 flowchart LR
-    App[Userspace Application] --> ID[IDriver]
+    App["Userspace Application"] --> ID["IDriver"]
     
-    ID --> LKD[LinuxThermalDriver]
-    ID -.-> VHB[VirtualHardwareBus]
+    ID --> LKD["LinuxThermalDriver"]
+    ID -.-> VHB["VirtualHardwareBus"]
     
-    LKD -- IOCTLs --> VFS[/dev/thermal_controller]
+    LKD -- "IOCTLs" --> VFS["/dev/thermal_controller"]
     
-    VFS -- System Calls --> KERNEL[Linux Character Driver]
+    VFS -- "System Calls" --> KERNEL["Linux Character Driver"]
     
-    KERNEL <--> STATE[(ADC/PWM/Tachometer/Load State)]
+    KERNEL <--> STATE[("ADC/PWM/Tachometer/Load State")]
 ```
 
 ## 4. Virtual Hardware / Register Model
@@ -77,17 +77,17 @@ Shared simulated kernel state arrays are safely accessed and modified under the 
 
 ```mermaid
 flowchart TD
-    subgraph Shared Simulated Kernel State
-        ADC[Virtual ADC state]
-        PWM[Virtual PWM duty]
-        TACH[Virtual tachometer pulses]
-        LOAD[Thermal-load state]
-        ZONE[Per-zone state]
+    subgraph SHARED["Shared Simulated Kernel State"]
+        ADC["Virtual ADC state"]
+        PWM["Virtual PWM duty"]
+        TACH["Virtual tachometer pulses"]
+        LOAD["Thermal-load state"]
+        ZONE["Per-zone state"]
     end
 
-    TIMER((Kernel simulation/timer\n500 ms interval)) -->|Updates| Shared Simulated Kernel State
+    TIMER(("Kernel simulation/timer\n500 ms interval")) -->|Updates| SHARED
     
-    Shared Simulated Kernel State <-->|IOCTL| APP[Thermal-control application]
+    SHARED <-->|IOCTL| APP["Thermal-control application"]
 ```
 
 ## 5. Important Data Structures
@@ -124,17 +124,17 @@ classDiagram
 
 ```mermaid
 sequenceDiagram
-    participant App as C++ Thermal Application
-    participant HAL as Driver HAL / IDriver
-    participant Backend as Selected Backend
-    participant VFS as /dev/thermal_controller
-    participant LKM as Linux Character Driver
-    participant State as Virtual Thermal State
+    participant App as "C++ Thermal Application"
+    participant HAL as "Driver HAL / IDriver"
+    participant Backend as "Selected Backend"
+    participant VFS as "/dev/thermal_controller"
+    participant LKM as "Linux Character Driver"
+    participant State as "Virtual Thermal State"
 
     App->>HAL: request thermal data
     HAL->>Backend: backend call (e.g., readADC)
     
-    note over Backend, LKM: LKM Mode Only
+    Note over Backend, LKM: LKM Mode Only
     Backend->>VFS: ioctl(THERMAL_GET_ADC_MV)
     VFS->>LKM: sys_ioctl
     LKM->>State: Read ADC (spinlock protected)
@@ -152,14 +152,14 @@ sequenceDiagram
     App->>HAL: request cooling (setPWM)
     HAL->>Backend: backend call (e.g., setPWM)
     
-    note over Backend, LKM: LKM Mode Only
+    Note over Backend, LKM: LKM Mode Only
     Backend->>VFS: ioctl(THERMAL_SET_PWM_DUTY)
     VFS->>LKM: sys_ioctl
     LKM->>State: Write PWM (spinlock protected)
     
     HAL->>Backend: backend call (e.g., getTachPulses)
     
-    note over Backend, LKM: LKM Mode Only
+    Note over Backend, LKM: LKM Mode Only
     Backend->>VFS: ioctl(THERMAL_GET_TACH_PULSES)
     VFS->>LKM: sys_ioctl
     LKM->>State: Read virtual tachometer feedback
@@ -203,25 +203,25 @@ This flowchart represents a software simulation workflow:
 
 ```mermaid
 flowchart TD
-    Load[Thermal Load] -->|Applied| State[Virtual Thermal State]
-    State -->|Drift| ADC[Virtual ADC]
-    ADC -->|Millivolts| NTC[ADC → Temperature Conversion]
+    Load["Thermal Load"] -->|Applied| State["Virtual Thermal State"]
+    State -->|Drift| ADC["Virtual ADC"]
+    ADC -->|Millivolts| NTC["ADC → Temperature Conversion"]
     
-    NTC -->|Celsius| HYST[Hysteresis Thermal Control]
+    NTC -->|Celsius| HYST["Hysteresis Thermal Control"]
     
-    HYST -->|Demand %| COORD[Multi-Zone Coordination]
+    HYST -->|Demand %| COORD["Multi-Zone Coordination"]
     
-    COORD -->|Max Demand %| PWM_CALC[Cooling Demand]
+    COORD -->|Max Demand %| PWM_CALC["Cooling Demand"]
     
-    PWM_CALC -->|0-255| PWM[PWM Duty]
+    PWM_CALC -->|0-255| PWM["PWM Duty"]
     
-    PWM -->|Actuation| FAN[Virtual Fan]
+    PWM -->|Actuation| FAN["Virtual Fan"]
     
-    FAN -->|Feedback| PULSE[Tachometer Pulses]
+    FAN -->|Feedback| PULSE["Tachometer Pulses"]
     
-    PULSE -->|Time Interval| RPM[RPM Calculation]
+    PULSE -->|Time Interval| RPM["RPM Calculation"]
     
-    RPM -->|Logged| CYCLE[Feedback to Control Cycle]
+    RPM -->|Logged| CYCLE["Feedback to Control Cycle"]
     
     CYCLE -->|Next Interval| State
 ```
